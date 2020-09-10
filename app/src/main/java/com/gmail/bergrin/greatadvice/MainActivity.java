@@ -7,6 +7,8 @@ import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.ImageView;
 
@@ -26,7 +28,8 @@ public class MainActivity extends AppCompatActivity {
     Button adviceButton;
     ImageView imageView;
     ImageView imageView2;
-
+    boolean isFirstImageViewVisible;
+    boolean isSecondImageViewVisible;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,8 +38,10 @@ public class MainActivity extends AppCompatActivity {
         adviceButton = findViewById(R.id.adviceButton);
         showAdvice();
         imageView = findViewById(R.id.imageView);
-        imageView = findViewById(R.id.imageView2);
+        imageView2 = findViewById(R.id.imageView2);
         imageView.animate().alpha(1).setDuration(2000);
+        isFirstImageViewVisible = true;
+        isSecondImageViewVisible = false;
     }
 
     public void showAdvice() {
@@ -57,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<Advice> call, Throwable t) {
-                adviceButton.setText("ОТСУТСВТУЕТ СЕТЬ ИНТЕРНЕТ");
+                adviceButton.setText("ОТСУТСВТУЕТ СЕТЬ ИНТЕРНЕТ ИЛИ ПРОБЛЕМЫ НА СТРОНОЕ СЕРВЕРА");
                 Log.d("LOG ", "ERROR " + t.getMessage());
             }
         });
@@ -119,13 +124,25 @@ public class MainActivity extends AppCompatActivity {
             }
 
             int width, height;
-
-            //ImageView imageView = findViewById(R.id.imageView);
             Bitmap bitmap = BitmapFactory.decodeFile(getExternalFilesDir(null) + File.separator + "50.jpg");
             width = bitmap.getWidth();
             height = bitmap.getHeight();
             Bitmap bitmapTwo = Bitmap.createScaledBitmap(bitmap, width, height, false);
-            imageView.setImageBitmap(bitmapTwo);
+            //
+            if (isFirstImageViewVisible) {
+                imageView2.setImageBitmap(bitmapTwo);
+                imageView.animate().alpha(0).setDuration(2000);
+                imageView2.animate().alpha(1).setDuration(2000);
+                isFirstImageViewVisible = false;
+
+            } else {
+                imageView.setImageBitmap(bitmapTwo);
+                imageView2.animate().alpha(0).setDuration(2000);
+                imageView.animate().alpha(1).setDuration(2000);
+                isFirstImageViewVisible = true;
+            }
+            //
+            //  imageView.setImageBitmap(bitmapTwo);
             return true;
 
         } catch (Exception e) {
@@ -135,6 +152,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void advice(View view) {
+        final Animation animationFlipIn = AnimationUtils.loadAnimation(this,
+                android.R.anim.slide_in_left);
+        adviceButton.startAnimation(animationFlipIn);
         showImage(getNumber());
         showAdvice();
     }
