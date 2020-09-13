@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -45,57 +46,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void showAdvice() {
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("http://fucking-great-advice.ru/api/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-
-        AdviceApi adviceApi = retrofit.create(AdviceApi.class);
-
-        Call<Advice> advice = adviceApi.getRandomAdvice();
-
-        advice.enqueue(new Callback<Advice>() {
-            @Override
-            public void onResponse(Call<Advice> call, Response<Advice> response) {
-                adviceButton.setText(response.body().getText());
-            }
-
-            @Override
-            public void onFailure(Call<Advice> call, Throwable t) {
-                adviceButton.setText("ОТСУТСВТУЕТ СЕТЬ ИНТЕРНЕТ ИЛИ ПРОБЛЕМЫ НА СТРОНОЕ СЕРВЕРА");
-                Log.d("LOG ", "ERROR " + t.getMessage());
-            }
-        });
+        new ShowAdviceAsyncTask().execute();
     }
 
     public void showImage(String number) {
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://fucking-great-advice.ru/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-
-        ImageApi service = retrofit.create(ImageApi.class);
-
-        Call<ResponseBody> call = service.getImage(number);
-        call.enqueue(new Callback<ResponseBody>() {
-            @Override
-            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                try {
-                    Log.d("LOG", "Response came from server");
-                    boolean fileDownLoaded = DownloadImage(response.body());
-                    Log.d("LOG", "Image downloaded and saved  - " + fileDownLoaded);
-                } catch (Exception e) {
-                    Log.d("LOG", "There is an error ");
-                    e.printStackTrace();
-                }
-
-            }
-
-            @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {
-                Log.d("LOG", "ON FAILURE " + t.toString());
-            }
-        });
+        new ShowImageAsyncTask().execute(number);
     }
 
     private boolean DownloadImage(ResponseBody body) {
@@ -106,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
 
             try {
                 inputStream = body.byteStream();
-                fileOutputStream = new FileOutputStream(getExternalFilesDir(null) + File.separator + "50.jpg");
+                fileOutputStream = new FileOutputStream(getExternalFilesDir(null) + File.separator + ".jpg");
                 int c;
                 while ((c = inputStream.read()) != -1) {
                     fileOutputStream.write(c);
@@ -124,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             int width, height;
-            Bitmap bitmap = BitmapFactory.decodeFile(getExternalFilesDir(null) + File.separator + "50.jpg");
+            Bitmap bitmap = BitmapFactory.decodeFile(getExternalFilesDir(null) + File.separator + ".jpg");
             width = bitmap.getWidth();
             height = bitmap.getHeight();
             Bitmap bitmapTwo = Bitmap.createScaledBitmap(bitmap, width, height, false);
@@ -169,5 +124,70 @@ public class MainActivity extends AppCompatActivity {
             return "" + result;
         }
 
+    }
+
+    private class ShowAdviceAsyncTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            Retrofit retrofit = new Retrofit.Builder()
+                    .baseUrl("http://fucking-great-advice.ru/api/")
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .build();
+
+            AdviceApi adviceApi = retrofit.create(AdviceApi.class);
+
+            Call<Advice> advice = adviceApi.getRandomAdvice();
+
+            advice.enqueue(new Callback<Advice>() {
+                @Override
+                public void onResponse(Call<Advice> call, Response<Advice> response) {
+                    adviceButton.setText(response.body().getText().replaceAll("блять", "блин"));
+                }
+
+                @Override
+                public void onFailure(Call<Advice> call, Throwable t) {
+                    adviceButton.setText("ОТСУТСВТУЕТ СЕТЬ ИНТЕРНЕТ ИЛИ ПРОБЛЕМЫ НА СТРОНОЕ СЕРВЕРА");
+                    Log.d("LOG ", "ERROR " + t.getMessage());
+                }
+            });
+            return null;
+        }
+    }
+
+    private class ShowImageAsyncTask extends AsyncTask<String, Void, Void> {
+
+
+        @Override
+        protected Void doInBackground(String... strings) {
+            Retrofit retrofit = new Retrofit.Builder()
+                    .baseUrl("https://fucking-great-advice.ru/")
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .build();
+
+            ImageApi service = retrofit.create(ImageApi.class);
+
+            Call<ResponseBody> call = service.getImage(strings[0]);
+            call.enqueue(new Callback<ResponseBody>() {
+                @Override
+                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                    try {
+                        Log.d("LOG", "Response came from server");
+                        boolean fileDownLoaded = DownloadImage(response.body());
+                        Log.d("LOG", "Image downloaded and saved  - " + fileDownLoaded);
+                    } catch (Exception e) {
+                        Log.d("LOG", "There is an error ");
+                        e.printStackTrace();
+                    }
+
+                }
+
+                @Override
+                public void onFailure(Call<ResponseBody> call, Throwable t) {
+                    Log.d("LOG", "ON FAILURE " + t.toString());
+                }
+            });
+            return null;
+        }
     }
 }
