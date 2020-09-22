@@ -50,9 +50,6 @@ public class MainActivity extends AppCompatActivity {
         imageView.animate().alpha(1).setDuration(2000);
         isFirstImageViewVisible = true;
         isSecondImageViewVisible = false;
-
-        animationFlipIn = AnimationUtils.loadAnimation(this,
-                android.R.anim.slide_in_left);
     }
 
     public void showAdvice() {
@@ -169,7 +166,6 @@ public class MainActivity extends AppCompatActivity {
                             .replaceAll("наебнулся", "упал")
                             .replaceAll("пизди", "болтай");
                     adviceButton.setText(adviceText);
-//                    adviceButton.startAnimation(animationFlipIn);
                 }
 
                 @Override
