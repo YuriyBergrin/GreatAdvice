@@ -30,7 +30,7 @@
         <Button
             android:id="@+id/adviceButton"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:onClick="advice"
             android:layout_marginLeft="20dp"
             android:layout_marginRight="20dp"

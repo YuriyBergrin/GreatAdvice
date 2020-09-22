@@ -32,6 +32,13 @@ public class MainActivity extends AppCompatActivity {
     boolean isFirstImageViewVisible;
     boolean isSecondImageViewVisible;
 
+    private static Retrofit adviceRetrofit = null;
+    private static Retrofit imageRetrofit = null;
+
+    private Animation animationFlipIn = null;
+
+    private String adviceText;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,6 +50,9 @@ public class MainActivity extends AppCompatActivity {
         imageView.animate().alpha(1).setDuration(2000);
         isFirstImageViewVisible = true;
         isSecondImageViewVisible = false;
+
+        animationFlipIn = AnimationUtils.loadAnimation(this,
+                android.R.anim.slide_in_left);
     }
 
     public void showAdvice() {
@@ -107,9 +117,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void advice(View view) {
-        final Animation animationFlipIn = AnimationUtils.loadAnimation(this,
-                android.R.anim.slide_in_left);
-        adviceButton.startAnimation(animationFlipIn);
+//        final Animation animationFlipIn = AnimationUtils.loadAnimation(this,
+//                android.R.anim.slide_in_left);
+//        adviceButton.startAnimation(animationFlipIn);
         showImage(getNumber());
         showAdvice();
     }
@@ -127,22 +137,39 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private class ShowAdviceAsyncTask extends AsyncTask<Void, Void, Void> {
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            adviceButton.setText(adviceText);
+            adviceButton.startAnimation(animationFlipIn);
+        }
 
         @Override
         protected Void doInBackground(Void... voids) {
-            Retrofit retrofit = new Retrofit.Builder()
-                    .baseUrl("http://fucking-great-advice.ru/api/")
-                    .addConverterFactory(GsonConverterFactory.create())
-                    .build();
 
-            AdviceApi adviceApi = retrofit.create(AdviceApi.class);
+            if (adviceRetrofit == null) {
+                adviceRetrofit = new Retrofit.Builder()
+                        .baseUrl("http://fucking-great-advice.ru/api/")
+                        .addConverterFactory(GsonConverterFactory.create())
+                        .build();
+            }
+
+            AdviceApi adviceApi = adviceRetrofit.create(AdviceApi.class);
 
             Call<Advice> advice = adviceApi.getRandomAdvice();
 
             advice.enqueue(new Callback<Advice>() {
                 @Override
                 public void onResponse(Call<Advice> call, Response<Advice> response) {
-                    adviceButton.setText(response.body().getText().replaceAll("блять", "блин"));
+                    adviceText = response.body().getText().replaceAll("блять", "блин")
+                            .replaceAll("хуй", "фиг")
+                            .replaceAll("еби", "это самое")
+                            .replaceAll("бля", "блин")
+                            .replaceAll("хули", "чёрт побери")
+                            .replaceAll("наебнулся", "упал")
+                            .replaceAll("пизди", "болтай");
+//                    adviceButton.setText(adviceText);
+//                    adviceButton.startAnimation(animationFlipIn);
                 }
 
                 @Override
@@ -160,12 +187,15 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected Void doInBackground(String... strings) {
-            Retrofit retrofit = new Retrofit.Builder()
-                    .baseUrl("https://fucking-great-advice.ru/")
-                    .addConverterFactory(GsonConverterFactory.create())
-                    .build();
 
-            ImageApi service = retrofit.create(ImageApi.class);
+            if (imageRetrofit == null) {
+                imageRetrofit = new Retrofit.Builder()
+                        .baseUrl("https://fucking-great-advice.ru/")
+                        .addConverterFactory(GsonConverterFactory.create())
+                        .build();
+            }
+
+            ImageApi service = imageRetrofit.create(ImageApi.class);
 
             Call<ResponseBody> call = service.getImage(strings[0]);
             call.enqueue(new Callback<ResponseBody>() {
