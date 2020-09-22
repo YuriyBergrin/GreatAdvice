@@ -137,12 +137,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private class ShowAdviceAsyncTask extends AsyncTask<Void, Void, Void> {
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
-            adviceButton.setText(adviceText);
-            adviceButton.startAnimation(animationFlipIn);
-        }
+//        @Override
+//        protected void onPostExecute(Void aVoid) {
+//            super.onPostExecute(aVoid);
+//            adviceButton.setText(adviceText);
+//            //adviceButton.startAnimation(animationFlipIn);
+//        }
 
         @Override
         protected Void doInBackground(Void... voids) {
@@ -168,7 +168,7 @@ public class MainActivity extends AppCompatActivity {
                             .replaceAll("хули", "чёрт побери")
                             .replaceAll("наебнулся", "упал")
                             .replaceAll("пизди", "болтай");
-//                    adviceButton.setText(adviceText);
+                    adviceButton.setText(adviceText);
 //                    adviceButton.startAnimation(animationFlipIn);
                 }
 
